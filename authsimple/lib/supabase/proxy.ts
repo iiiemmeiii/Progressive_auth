@@ -25,16 +25,21 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  const { data } = await supabase.auth.getClaims();
-  const user = data?.claims
-  
-  const publicRoute= ["/login", "/signup"]
-  const isPublicRoute = publicRoute.some(path => request.nextUrl.pathname.startsWith(path) || request.nextUrl.pathname.startsWith(`/auth/${path}` ))
+  const { data: {user} } = await supabase.auth.getUser();
+  const publicRoute= ["/","/login", "/signup"]
 
+  const pathname = request.nextUrl.pathname
+  const isLoginPage = pathname.startsWith('/login');
+  const isSignupPage = pathname.startsWith('/signup');
+  const isRoot = pathname === '/';
+  const isPublicRoute = isLoginPage || isSignupPage  || isRoot
+
+  // const isPrivateRoute = privateRoute.some(path => request.nextUrl.pathname.startsWith(path))
+  
   // Redirection si non authentifié sur une route protégée
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone()
-    url.pathname = publicRoute[0];
+    url.pathname = "/login";
     return NextResponse.redirect(url)
   }
 

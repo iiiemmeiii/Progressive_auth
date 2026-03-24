@@ -10,13 +10,28 @@ export const SignupFormSchema = z.object({
     .trim(),
 });
 
-type SignupFormData = z.infer<typeof SignupFormSchema>
+export const LoginFormShema = z.object({
+   email: z.email({ error: "Votre email n'existe pas." }).trim(),
+   password: z.string({error: "password incorect"}).trim()
+})
 
-export type FormState =
+type SignupFormData = z.infer<typeof SignupFormSchema>
+type LoginFormData = z.infer<typeof LoginFormShema>
+
+export type FormStateSignup =
   | {
       success: boolean;
       message?: string | null;
       errors?: z.core.$ZodErrorTree<SignupFormData>;
+
+    }
+  | undefined;
+
+  export type FormStateLogin =
+  | {
+      success: boolean;
+      message?: string | null;
+      errors?: z.core.$ZodErrorTree<LoginFormData>;
 
     }
   | undefined;

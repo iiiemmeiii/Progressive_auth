@@ -9,14 +9,11 @@ import Link from "next/link"
 
 export default function SignupForm() {
   const [state, action, pending] = useActionState(signup, undefined)
-  const [isVisible, setIsvisble] = useState(true);
+  const [isVisible, setIsvisble] = useState(false);
   function handleChangeVisible() {
-    setIsvisble(!isVisible)
-  }
+    setIsvisble(prev => !prev)
 
-  
- 
-  console.log("state?.errors")
+  }
 
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
@@ -28,11 +25,11 @@ export default function SignupForm() {
           <form action={action} className="max-w-sm mx-auto">
             <div className="mb-5">
               <label className="block mb-2.5 text-sm font-medium text-heading">Your email</label>
-              <input type="email" name="email"
+              <input type="email" name="email" 
                 className="bg-neutral-secondary-medium border border-default-medium text-heading 
                 text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
-                placeholder="name@flowbite.com" />
-                
+                placeholder="name@mail.com" />
+
 
               <div className="">
                 {state?.errors?.properties?.email?.errors?.[0] &&
@@ -41,16 +38,16 @@ export default function SignupForm() {
             </div>
             <div className="mb-5">
               <label className="block mb-2.5 text-sm font-medium text-heading">Your password</label>
-              <input type={!isVisible ? "text" : "password"} name="password" className="bg-neutral-secondary-medium border 
-                  border-default-medium text-heading text-sm rounded-base focus:ring-brand 
-                  focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
+              <input type={!isVisible ? "password" : "text"} name="password"
+                className="bg-neutral-secondary-medium border 
+                border-default-medium text-heading text-sm rounded-base focus:ring-brand 
+                focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body"
                 placeholder="" />
-                
-                <span onClick={handleChangeVisible}>
-                  {!isVisible ? <EyeIcon className="text-yellow-500" /> : <EyeClosedIcon/>}
-                </span>
-                
-             
+              <span onClick={handleChangeVisible}>
+                {!isVisible ? <EyeClosedIcon /> : <EyeIcon className="text-yellow-500" />}
+              </span>
+
+
               <ul>
                 {state?.errors?.properties?.email?.errors?.[0] &&
                   state?.errors?.properties?.password?.errors.map((e, i) => {
