@@ -1,0 +1,53 @@
+services:
+  backend:
+    build: ./backend
+    container_name: backend_app
+    ports: 
+      - "3001:3001" 
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://admin:admin@db:5432/mydb
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - app_net
+
+  db:
+    image: postgres:17
+    container_name: postgres_db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=default_database
+    volumes:
+      - pgdata:/var/lib/postgresql/data/
+    networks:
+      - app_net
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin_ui
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=kalaxicrono@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin/
+    networks:
+      - app_net
+
+volumes:
+  pgdata:
+  pgadmin-data:
+
+networks:
+  app_net:
+    driver: bridge
