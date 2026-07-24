@@ -3,11 +3,12 @@ import express, { Application, NextFunction, Request, Response } from 'express';
 
 import { Airport } from '@/interfaces/Airport.interface.js';
 
+import { prisma } from './config/prisma.js';
+
 export class App {
     public readonly instance: Application;
 
     constructor() {
-        console.log("1# APP constructor\n")
         this.instance = express();
         this.configureMiddlewares();
         this.configRoutes();
@@ -15,47 +16,61 @@ export class App {
     }
 
     private configRoutes(): void {
-        console.log("2# configRoutes \n")
 
         this.instance.get('/', (req, res) => {
             res.header("Content-Type", "application/json");
             res.status(200).json("Home is ok")
         });
 
-        this.instance.get('/health', (req: Request, res: Response) => {
-            const data = {
-                message: 'Everything is gonna be alrigth',
-                status: 'ok',
-                timestamp: new Date().toISOString(),
-            };
+        this.instance.get('/airline', async (req: Request, res: Response) => {
+            const airlines = await prisma.airline.findMany()
             res.header("Content-Type", "application/json");
-            res.status(200).json(data);
+            res.status(200).json(airlines);
         });
-        this.instance.get('/aeroports', (req: Request, res: Response) => {
-            const airport: Airport[] = [
-                {
-                    city: 'Paris',
-                    country: 'France',
-                    iataCode: 'CDG',
-                    name: 'Charles de Gaulle',
-                },
-                {
-                    city: 'Bruxelles',
-                    country: 'Belgique',
-                    iataCode: 'BRU',
-                    name: 'Brussels Airport',
-                },
-                {
-                    city: 'New York',
-                    country: 'États-Unis',
-                    iataCode: 'JFK',
-                    name: 'John F. Kennedy',
-                },
-            ];
+
+        this.instance.get('/aeroports', async (req: Request, res: Response) => {
+            const airport: Airport[] = await prisma.airport.findMany({ orderBy: { name: "asc" } })
             res.status(200).json(airport);
         });
+
+        this.instance.get("/aeroports/:id", async (req: Request, res: Response) => {
+            const airportById = await prisma.airport.findUnique({ where: { id: req.params.id.toString() } })
+            if (!airportById) {
+                res.status(404).json(`Airport ${req.params.id} not found`)
+                return
+            }
+            res.status(200).json(airportById)
+        })
+
+        this.instance.post("/aeroports", async (req: Request, res: Response) => {
+            const { city, country, iataCode, name } = req.body
+            const createAirport = await prisma.airport.create({ data: { city, country, iataCode, name } })
+            if (!createAirport) {
+                res.status(404).json("impoible de creer un airport")
+                return
+            }
+            res.status(201).json(createAirport)
+        })
+
+        this.instance.put("/aeroports/:id", async (req: Request, res: Response) => {
+            const { city, country, iataCode, name } = req.body
+            const updateAirport = await prisma.airport.update({
+                data: { city, country, iataCode, name },
+                where: { id: req.params.id.toString() }
+            })
+            if (!updateAirport) {
+                res.status(404).json("impossible update" + req.body)
+                return
+            }
+            res.status(200).json(updateAirport)
+        })
+
+        this.instance.delete("/aeroports/:id", async (req: Request, res: Response) => {
+            await prisma.airport.delete({ where: { id: req.params.id.toString() } })
+            res.status(204).send()
+        })
     }
-    
+
 
 
     private configureErrorHandler(): void {
@@ -64,7 +79,6 @@ export class App {
         });
     }
     private configureMiddlewares(): void {
-        console.log("3# configureMiddlewares \n")
         // Le body est mis en json
         this.instance.use(express.json());
         this.instance.use(express.urlencoded({ extended: true }));

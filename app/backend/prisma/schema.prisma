@@ -1,0 +1,38 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Airport {
+  // UUID plutôt qu'auto-incrément : n'expose jamais le nombre total d'aéroports via l'URL
+  id        String   @id @default(uuid())
+  iataCode  String   @unique @db.VarChar(3) // contrainte d'unicité posée en base
+  name      String
+  city      String
+  country   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("airports") // nom de table explicite en snake_case, convention SQL classique
+}
+
+model Airline {
+  id        String   @id @default(uuid())
+  icaoCode  String   @unique @db.VarChar(3)
+  name      String
+  country   String
+  foundedIn Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("airlines")
+}

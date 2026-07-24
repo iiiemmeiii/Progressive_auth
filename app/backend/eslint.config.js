@@ -1,6 +1,6 @@
 import eslintjs from '@eslint/js';
 import tseslint from 'typescript-eslint';
-import perfectionist from 'eslint-plugin-perfectionist';
+// import perfectionist from 'eslint-plugin-perfectionist';
 import prettierConfig from 'eslint-config-prettier';
 import globals from 'globals';
 
@@ -10,7 +10,7 @@ export default tseslint.config(
   },
   eslintjs.configs.recommended,
   ...tseslint.configs.recommended,
-  perfectionist.configs['recommended-natural'],
+  // perfectionist.configs['recommended-natural'],
   {
     languageOptions: {
       globals: {
