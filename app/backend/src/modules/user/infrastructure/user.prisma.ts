@@ -2,7 +2,7 @@ import { prisma } from "@/config/prisma.js";
 import { IUserRepository } from "../domain/User.repository.js";
 import { UserEntity } from "../domain/User.js";
 import { Prisma, Profile, User } from "../../../../generated/prisma/client.js";
-import { ConflictError, NotFoundPage } from "@/errors/AppError.js";
+import { AppError, ConflictError, NotFoundPage } from "@/errors/AppError.js";
 import bcrypt from "bcrypt"
 import { Role } from "../../../../generated/prisma/enums.js";
 import { CreateUserInput, UpdateUserInput } from "@/lib/user.shema.js";
@@ -51,7 +51,7 @@ export class UserPrismaConfig implements IUserRepository {
                 profile: data.profile ? {
                     create: {
                         firstName: data.profile?.firstname ?? null,
-                        lastName    : data.profile?.lastname ?? null,
+                        lastName: data.profile?.lastname ?? null,
                         profession: data.profile?.profession ?? null
                     }
 
@@ -69,38 +69,56 @@ export class UserPrismaConfig implements IUserRepository {
             where: { id },
             include: { profile: true }
         })
-
         if (!exist) throw new NotFoundPage("User n'existe pas")
 
-        const { password, profile, ...userField } = data
-
-        const updatedData: Prisma.UserUpdateInput = { ...userField }
-
+        const password = data.password
         if (password) {
             const salt = await bcrypt.genSalt(12)
-            updatedData.passwordHash = await bcrypt.hash(password, salt)
+            const updatePassword = await bcrypt.hash(password, salt)
+            exist.passwordHash = updatePassword
         }
+        // const { password, profile, ...userField } = data
 
-        if (profile && Object.keys(profile).length > 0) {
+        // const updatedData: Prisma.UserUpdateInput = { ...userField }
 
-            updatedData.profile = {
-                upsert: {
-                    create: {
-                        firstName: profile.firstname ?? null,
-                        lastName: profile.lastname ?? null,
-                        profession: profile.profession ?? null,
-                    },
-                    update: profile
-                }
-            }
-        }
-        const record = await prisma.user.update({
-            where: { id },
-            data: updatedData,
-            include: { profile: true }
-        })
+        // if (password) {
+        //     const salt = await bcrypt.genSalt(12)
+        //     updatedData.passwordHash = await bcrypt.hash(password, salt)
+        // }
 
-        return this.userMapper(record)
+        // try {
+
+        //     if (profile && Object.keys(profile).length > 0) {
+
+        //         updatedData.profile = {
+        //             upsert: {
+        //                 create: {
+        //                     firstName: profile.firstname ?? null,
+        //                     lastName: profile.lastname ?? null,
+        //                     profession: profile.profession ?? null,
+        //                 },
+        //                 update: profile,
+        //                 where: { id }
+        //             }
+        //         }
+        //     }
+        //     const record = await prisma.user.update({
+        //         where: { id },
+        //         data: updatedData,
+        //         include: { profile: true }
+        //     })
+
+        //     return this.userMapper(record)
+
+        // } catch (err) {
+        //     if (err instanceof AppError) {
+        //         throw err
+        //     }
+        // }
+
+
+
+
     }
 
     async deleteUser(id: string): Promise<void> {
